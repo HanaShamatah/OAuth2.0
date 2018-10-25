@@ -133,11 +133,11 @@ def fbdisconnect():
     print url
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
-    del login_session['username']
-    del login_session['email']
-    del login_session['picture']
-    del login_session['user_id']
-    del login_session['facebook_id']
+    # del login_session['username']
+    # del login_session['email']
+    # del login_session['picture']
+    # del login_session['user_id']
+    # del login_session['facebook_id']
     return redirect(url_for('showRestaurants'))
 
 
@@ -150,8 +150,8 @@ def gconnect():
         return response
     # Obtain authorization code
     code = request.data
-    print 'the code is:'
-    print code
+    # print 'the code is:'
+    # print code
 
     try:
         # Upgrade the authorization code into a credentials object
@@ -298,11 +298,11 @@ def gdisconnect():
     print 'result is '
     print result
     if result['status'] == '200':
-        del login_session['access_token']
-        del login_session['gplus_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
+        # del login_session['access_token']
+        # del login_session['gplus_id']
+        # del login_session['username']
+        # del login_session['email']
+        # del login_session['picture']
         # del login_session['credentials']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
@@ -483,7 +483,7 @@ def deleteMenuItem(restaurant_id, menu_id):
         flash('Menu Item Successfully Deleted')
         return redirect(url_for('showMenu', restaurant_id=restaurant_id))
     else:
-        return render_template('deleteMenuItem.html', item=itemToDelete)
+        return render_template('deleteMenuItem.html', restaurant_id=restaurant_id, item=itemToDelete)
 
 
 if __name__ == '__main__':

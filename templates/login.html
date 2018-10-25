@@ -77,13 +77,13 @@ function signInCallback(authResult) {
 <script>
   window.fbAsyncInit = function() {
   FB.init({
-    appId      : '760476904306324',
+    appId      : '475199239637966',
     cookie     : true,  // enable cookies to allow the server to access 
                         // the session
     xfbml      : true,  // parse social plugins on this page
-    version    : 'v3.1' // use version v2.2
+    version    : 'v3.2' // use version v2.2
   });
-  // FB.AppEvents.logPageView();
+  FB.AppEvents.logPageView();
   };
   // Load the JavaScript SDK asynchronously
   
@@ -91,7 +91,7 @@ function signInCallback(authResult) {
     var js, fjs = d.getElementsByTagName(s)[0];
     if (d.getElementById(id)) return;
     js = d.createElement(s); js.id = id;
-    js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.1&appId=760476904306324&autoLogAppEvents=1';
+    js.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.1&appId=475199239637966&autoLogAppEvents=1';
     fjs.parentNode.insertBefore(js, fjs);
   }(document, 'script', 'facebook-jssdk'));
   // Here we run a very simple test of the Graph API after login is
@@ -127,16 +127,14 @@ function signInCallback(authResult) {
 </script>
 
 
-<button>
          
 
-          <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
+<fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
 <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
 
 </fb:login-button>
 
 
-        </button>
 <!--END FACEBOOK SIGN IN -->
 
 </body>

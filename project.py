@@ -67,7 +67,7 @@ def fbconnect():
     result = h.request(url, 'GET')[1]
 
     # Use token to get user info from API
-    userinfo_url = "https://graph.facebook.com/v3.1/me"
+    userinfo_url = "https://graph.facebook.com/v3.2/me"
     '''
         Due to the formatting for the result from the server token exchange we have to
         split the token first on commas and select the first index which gives us the key : value
@@ -75,24 +75,27 @@ def fbconnect():
         and replace the remaining quotes with nothing so that it can be used directly in the graph
         api calls
     '''
+    # token = result.split("&")[0]
     token = result.split(',')[0].split(':')[1].replace('"', '')
+    print token
 
-    url = 'https://graph.facebook.com/v3.1/me?access_token=%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v3.2/me?access_token=%s&fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print "url sent for API access:%s"% url
     # print "API JSON result: %s" % result
     data = json.loads(result)
     login_session['provider'] = 'facebook'
-    login_session['username'] = data["name"]
     login_session['email'] = data["email"]
+    login_session['username'] = data["name"]
     login_session['facebook_id'] = data["id"]
+    print login_session['facebook_id']
 
     # The token must be stored in the login_session in order to properly logout
     login_session['access_token'] = token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v3.1/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v3.2/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -120,14 +123,22 @@ def fbconnect():
 
 @app.route('/fbdisconnect')
 def fbdisconnect():
+    print "facebook logout"
     facebook_id = login_session['facebook_id']
-    # The access token must me included to successfully logout
+    # # The access token must me included to successfully logout
     access_token = login_session['access_token']
+    print "access token received %s " % access_token
     url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
         facebook_id, access_token)
+    print url
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
-    return "you have been logged out"
+    del login_session['username']
+    del login_session['email']
+    del login_session['picture']
+    del login_session['user_id']
+    del login_session['facebook_id']
+    return redirect(url_for('showRestaurants'))
 
 
 @app.route('/gconnect', methods=['POST'])
@@ -247,6 +258,28 @@ def getUserID(email):
         return None
 
 
+@app.route('/disconnect')
+def disconnect():
+    if 'provider' in login_session:
+        if login_session['provider'] == 'google':
+            gdisconnect()
+            del login_session['gplus_id']
+            # del login_session['credentials']
+        if login_session['provider'] == 'facebook':
+            fbdisconnect()
+            del login_session['facebook_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['user_id']
+        del login_session['provider']
+        flash("You were successfully been logged out.")
+        return redirect(url_for('showRestaurants'))
+    else:
+        flash("You were not logged in to begin with!.")
+        redirect(url_for('showRestaurants'))
+
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
@@ -270,9 +303,10 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
+        # del login_session['credentials']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return redirect(url_for('showRestaurants'))
     else:
         response = make_response(json.dumps(
             'Failed to revoke token for given user.', 400))
@@ -392,6 +426,8 @@ def newMenuItem(restaurant_id):
     if 'username' not in login_session:
         return redirect('/login')
     restaurant = session.query(Restaurant).filter_by(id=restaurant_id).one()
+    if restaurant.user_id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to add a new menu item. Please create your own restaurant with its menu items.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         newItem = MenuItem(name=request.form['name'], description=request.form['description'], price=request.form[
                            'price'], course=request.form['course'], restaurant_id=restaurant_id, user_id=restaurant.user_id)
